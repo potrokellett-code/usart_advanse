@@ -19,11 +19,13 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
+#include "dma.h"
+#include "usart.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "bsp_usart.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -86,7 +88,11 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
+  MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
+  //******************************** EasyLogger *****************************//
+
 	/* initialize EasyLogger */
 	elog_init();
 	/* set EasyLogger log format */
@@ -98,7 +104,13 @@ int main(void)
 	elog_set_fmt(ELOG_LVL_VERBOSE, ELOG_FMT_ALL & ~(ELOG_FMT_FUNC | ELOG_FMT_T_INFO | ELOG_FMT_P_INFO));
 	/* start EasyLogger */
 	elog_start();
+  //******************************** EasyLogger *****************************//
 
+  //******************************** task ***********************************//
+  usart_taskHandle = osThreadNew(usart_task_func, NULL, &usart_task_attributes);
+  app_usart_taskHandle = osThreadNew(app_usart_task_func, NULL, 
+                                  &app_usart_task_attributes);
+  //******************************** task ***********************************//
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -107,7 +119,6 @@ int main(void)
 
   /* Start scheduler */
   osKernelStart();
-
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
